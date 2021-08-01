@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
 
     /** Java equivalent would be
      *
-     *
      * Private final String TAG = MainActivity.class.getSimpleName();*/
     companion object {
 
@@ -42,7 +41,23 @@ class MainActivity : AppCompatActivity() {
     /** Save app username in Shared Preferences*/
     fun saveName(view: View) {
 
+        /**Save person's name in SharedPreferences using editor(Kotlin)
+         * This name will be used in the drawer
+         * */
 
+        //Validation layer
+
+        if(isNotEmpty(etName, inputLayoutName)) {
+            val personName = etName.text.toString()
+            //Initialize SharedPreferences file
+            val sp = getSharedPreferences(Constants.APP_SHARED_PREFERENCES, Context.MODE_PRIVATE)
+            //get reference to editor
+            val editor = sp.edit()
+            //Put person name within file using editor
+            editor.putString(Constants.KEY_PERSON_NAME, personName)
+            //Commit
+            editor.apply()
+        }
     }
 
     /**Search repositories on Github after passing data to DisplayActivity*/
@@ -97,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     fun isNotEmpty(editText: EditText, textInputLayout: TextInputLayout) : Boolean {
 
-        if (editText.toString().isEmpty()){
+        if (editText.text.toString().isEmpty()){
             //set validation error
             textInputLayout.error = "Cannot be blank !"
             return false

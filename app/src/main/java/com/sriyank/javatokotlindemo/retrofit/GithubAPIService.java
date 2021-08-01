@@ -16,7 +16,7 @@ import retrofit2.http.QueryMap;
 public interface GithubAPIService {
 
 	@GET("search/repositories")
-	Call<SearchResponse> searchRepositories(@QueryMap Map<String, String> options);
+		Call<SearchResponse> searchRepositories(@QueryMap Map<String, String> options);
 
 	@GET("/users/{username}/repos")
 	Call<List<Repository>> searchRepositoriesByUser(@Path("username") String githubUser);

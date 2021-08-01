@@ -9,6 +9,7 @@ public class RetrofitClient {
 	private static final String BASE_URL = "https://api.github.com/";
 	private static Retrofit retrofit = null;
 
+
 	public static GithubAPIService getGithubAPIService() {
 		Retrofit retrofit = getClient(BASE_URL);
 		GithubAPIService githubAPIService = retrofit.create(GithubAPIService.class);
@@ -24,4 +25,6 @@ public class RetrofitClient {
 		}
 		return retrofit;
 	}
+
+
 }
