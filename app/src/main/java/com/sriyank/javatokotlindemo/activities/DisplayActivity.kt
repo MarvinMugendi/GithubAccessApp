@@ -4,16 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.MenuItem
 import com.sriyank.javatokotlindemo.R
-import com.sriyank.javatokotlindemo.activities.DisplayActivity
 import com.sriyank.javatokotlindemo.adapters.DisplayAdapter
 import com.sriyank.javatokotlindemo.app.Constants
 import com.sriyank.javatokotlindemo.app.Util
@@ -32,9 +28,11 @@ import java.util.*
 class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
 
-    private var mDisplayAdapter: DisplayAdapter? = null
-    private var browsedRepositories: List<Repository?>? = null
-    private var mService: GithubAPIService? = null
+    private lateinit var displayAdapter: DisplayAdapter
+    private var browsedRepositories: List<Repository?> = mutableListOf()
+    private val githubAPIService: GithubAPIService by lazy {
+        RetrofitClient.getGithubAPIService()
+    }
     private var mRealm: Realm? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +50,6 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         /**Function to setUsername on the drawer display*/
         setAppUsername()
 
-        mService = RetrofitClient.getGithubAPIService()
 
         mRealm = Realm.getDefaultInstance()
 
@@ -94,7 +91,7 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
          * an object of the annonymous inner class.
          * !! means Not Null
          */
-        mService!!.searchRepositoriesByUser(githubUser).enqueue(object : Callback <List<Repository>>
+        githubAPIService!!.searchRepositoriesByUser(githubUser).enqueue(object : Callback <List<Repository>>
         {
             override fun onResponse(call: Call<List<Repository>>, response: Response<List<Repository>>) {
             //If else condition if success or a failure
@@ -103,7 +100,7 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                     Log.i(TAG, "Posts loaded from API $response")
 
                     //Initialize browsedRepositories
-                    browsedRepositories = response.body()
+                    browsedRepositories = response.body()!!
 
                     //If not empty initialize recyclerview
                     if (browsedRepositories!!.isNotEmpty()){
@@ -137,7 +134,7 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             queryRepo += " language:$repoLanguage"
             query["q"] = queryRepo
 
-        mService!!.searchRepositories(query).enqueue(object : Callback<SearchResponse> {
+        githubAPIService!!.searchRepositories(query).enqueue(object : Callback<SearchResponse> {
 
             override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
 
@@ -161,8 +158,8 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     }
 
     private fun setupRecyclerView(items: List<Repository?>?) {
-        mDisplayAdapter = DisplayAdapter(this, items)
-        recyclerView!!.adapter = mDisplayAdapter
+        displayAdapter = DisplayAdapter(this, items)
+        recyclerView!!.adapter = displayAdapter
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
@@ -182,13 +179,13 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     }
 
     private fun showBrowsedResults() {
-        mDisplayAdapter!!.swap(browsedRepositories)
+        displayAdapter!!.swap(browsedRepositories)
     }
 
     private fun showBookmarks() {
         mRealm!!.executeTransaction { realm ->
             val repositories = realm.where(Repository::class.java).findAll()
-            mDisplayAdapter!!.swap(repositories)
+            displayAdapter!!.swap(repositories)
         }
     }
 
